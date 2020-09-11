@@ -3,11 +3,12 @@ const bodyParser = require('body-parser');
 const graphqlHttp = require('express-graphql');
 // to build graphql schema
 const { buildSchema }= require('graphql');
+const mongoose = require('mongoose');
+
+const Event = require('./models/Event');
 
 const app = express();
 app.use(bodyParser.json());
-
-const events = [];
 
 // use graphql middleware
 app.use('/graphql', graphqlHttp.graphqlHTTP({
@@ -42,18 +43,30 @@ app.use('/graphql', graphqlHttp.graphqlHTTP({
     `),
     // we write resolvers in rootValue
     rootValue:{
-        events: () =>{
-            return events;
-        },
-        createEvent: (args) =>{
-            const {title, description, price} = args.eventInput;
-            const event = {
-                _id: Math.random().toString(),
-                title, description, price: +price,
-                date: new Date().toISOString()
+        events: async () =>{
+            try {
+                const events = await Event.find();
+
+                return events;
+            } catch (error) {
+                throw error;
             }
-            events.push(event);
-            return event;
+        },
+        createEvent: async (args) =>{
+            try {
+                const {title, description, price,date} = args.eventInput;
+                const event = new Event({
+                    title, description,
+                    price: +price,
+                    date: new Date(date)
+                });
+                await event.save()
+                return event;
+                
+            } catch (err) {
+                console.log(err);
+                throw err;
+            }
         }
     },
     graphiql: true
@@ -61,4 +74,16 @@ app.use('/graphql', graphqlHttp.graphqlHTTP({
 
 const PORT = process.env.PORT || 3000;
 
+const connectDB = async () =>{
+    try {
+        await mongoose.connect('mongodb+srv://sai:12345@event-booking.qylxe.mongodb.net/eventBooking?retryWrites=true&w=majority', 
+        {useUnifiedTopology: true,useNewUrlParser: true});
+        console.log('mongodb connected');
+        
+    } catch (error) {
+        console.log('error')
+    }
+}
+
+connectDB();
 app.listen(PORT, () => console.log(`Server is up on port ${PORT}`));
