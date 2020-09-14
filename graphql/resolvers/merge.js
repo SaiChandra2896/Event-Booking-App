@@ -11,6 +11,16 @@ const transformEvent = event =>{
     }
 }
 
+const transformBooking = booking =>{
+    return{
+        ...booking._doc,
+        user: getUser(booking._doc.user),
+        event: getSingleEvent(booking._doc.event),
+        createdAt: dateToString(booking._doc.createdAt),
+        updatedAt: dateToString(booking._doc.updatedAt)
+    }
+}
+
 const getUser = async userId =>{
     try {
         const user = await User.findById(userId).select('-password');
@@ -48,3 +58,5 @@ const getSingleEvent = async eventId =>{
 exports.getUser = getUser;
 exports.getEvents = getEvents;
 exports.getSingleEvent = getSingleEvent;
+exports.transformEvent = transformEvent;
+exports.transformBooking = transformBooking;

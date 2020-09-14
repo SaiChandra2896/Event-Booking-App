@@ -3,15 +3,7 @@ const {dateToString} = require('../../helpers/date');
 const User = require('../../models/User');
 const Event = require('../../models/Event');
 
-const {getUser} = require('./merge');
-
-const transformEvent = event =>{
-    return {
-        ...event._doc,
-        date: dateToString(event._doc.date),
-        creator: getUser(event._doc.creator)
-    }
-}
+const {transformEvent} = require('./merge');
 
 module.exports = {
     events: async () =>{
@@ -20,7 +12,6 @@ module.exports = {
 
             const eventsWithUser = events.map(async event => {
                 // console.log(event.creator);
-                const owner = await getUser(event._doc.creator);
                 return transformEvent(event);
             })
             return eventsWithUser;

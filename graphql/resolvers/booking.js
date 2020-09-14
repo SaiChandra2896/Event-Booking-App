@@ -1,20 +1,7 @@
 const Booking = require('../../models/Booking');
 const Event = require('../../models/Booking');
 
-const {dateToString} = require('../../helpers/date');
-
-const {getUser, getSingleEvent} = require('./merge');
-
-const transformBooking = booking =>{
-    return{
-        ...booking._doc,
-        user: getUser(booking._doc.user),
-        event: getSingleEvent(booking._doc.event),
-        createdAt: dateToString(booking._doc.createdAt),
-        updatedAt: dateToString(booking._doc.updatedAt)
-    }
-}
-
+const {getUser, transformBooking} = require('./merge');
 
 module.exports = {
     bookings: async () =>{
@@ -35,8 +22,8 @@ module.exports = {
                 user: '5f5ef09a1295a34024f6a164',
                 event 
             });
-            const bookedEvent = await booking.save();
-            return transformBooking(bookedEvent);
+            await booking.save();
+            return transformBooking(booking);
         } catch (error) {
             throw error;
         }
