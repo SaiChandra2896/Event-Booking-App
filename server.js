@@ -1,100 +1,21 @@
 const express = require('express');
 const bodyParser = require('body-parser'); 
 const graphqlHttp = require('express-graphql');
-// to build graphql schema
-const { buildSchema }= require('graphql');
 const mongoose = require('mongoose');
-const bcrypt = require('bcryptjs');
 
-const Event = require('./models/Event');
-const User = require('./models/User');
+const graphQLSchema = require('./graphql/schema/index');
+const graphQLResolvers = require('./graphql/resolvers/index');
 
 const app = express();
 app.use(bodyParser.json());
 
+
+
 // use graphql middleware
 app.use('/graphql', graphqlHttp.graphqlHTTP({
-    schema: buildSchema(`
-        type Event {
-            _id: ID!
-            title: String!
-            description: String!
-            price: Float!
-            date: String!
-        }
-
-        type User {
-            _id: ID!
-            email: String!
-            password: String
-        }
-
-        input EventInput {
-            title: String!
-            description: String!
-            price: Float!
-            date: String!
-        }
-
-        input UserInput {
-            email: String!
-            password: String!
-        }
-
-        type RootQuery {
-            events: [Event!]!
-        }
-
-        type RootMutation {
-            createEvent(eventInput: EventInput): Event
-            createUser(userInput: UserInput): User
-        }
-
-        schema {
-            query: RootQuery
-            mutation: RootMutation
-        }
-    `),
+    schema: graphQLSchema,
     // we write resolvers in rootValue
-    rootValue:{
-        events: async () =>{
-            try {
-                const events = await Event.find();
-
-                return events;
-            } catch (error) {
-                throw error;
-            }
-        },
-        createEvent: async (args) =>{
-            try {
-                const {title, description, price,date} = args.eventInput;
-                const event = new Event({
-                    title, description,
-                    price: +price,
-                    date: new Date(date)
-                });
-                await event.save()
-                return event;
-                
-            } catch (err) {
-                console.log(err);
-                throw err;
-            }
-        },
-        createUser: async args =>{
-            const {email,password} = args.userInput;
-
-            try {
-                const user = new User({
-                    email,
-                    password
-                });
-            } catch (error) {
-                throw error;
-            }
-        }
-    },
+    rootValue: graphQLResolvers,
     graphiql: true
 }));
 
