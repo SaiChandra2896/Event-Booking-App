@@ -1,4 +1,4 @@
-import React, {useContext} from 'react';
+import React, {Fragment, useContext} from 'react';
 import {NavLink} from 'react-router-dom';
 
 import AuthContext from '../../context/authContext';
@@ -27,11 +27,14 @@ const Navigation = (props) => {
                         </NavLink>
                     </li>
                     {authContext.token && (
-                    <li>
-                        <NavLink to="/bookings">
-                            Bookings
-                        </NavLink>
-                    </li>
+                    <Fragment>
+                        <li>
+                            <NavLink to="/bookings">
+                                Bookings
+                            </NavLink>
+                        </li>
+                        <button onClick={authContext.logout}>Logout</button>
+                    </Fragment>
                     )}
                 </ul>
            </nav>
